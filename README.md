@@ -1,4 +1,7 @@
-## getting started 
+# getting started 
 
-to set up use 
-pip install -r requirements.txt
+** to set up use 
+
+  ```
+  pip install -r requirements.txt
+  ```
