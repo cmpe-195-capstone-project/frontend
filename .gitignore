@@ -85,3 +85,21 @@ db.sqlite3
 
 # Jupyter/IPython
 .ipynb_checkpoints
+
+# Android secrets
+android/local.properties
+*.keystore
+
+# iOS builds
+ios/build/
+ios/Pods/
+
+# React Native logs
+*.log
+*.tmp
+*.orig
+
+# Metro & cache
+.cache/
+.babelrc.js
+.metro-health-check*
