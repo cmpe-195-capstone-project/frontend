@@ -56,9 +56,11 @@ desktop.ini
 *.expo
 
 # Testing
+__tests__/
 coverage/
 htmlcov/
 *.coverage
+.watchmanconfig
 
 # Python Backend (FastAPI/Django/etc)
 
@@ -90,9 +92,6 @@ db.sqlite3
 android/local.properties
 *.keystore
 
-# iOS builds
-ios/build/
-ios/Pods/
 
 # React Native logs
 *.log
@@ -103,3 +102,18 @@ ios/Pods/
 .cache/
 .babelrc.js
 .metro-health-check*
+
+# Build
+android/app/build/
+ios/build/
+.bundle/
+node_modules/
+ios/Pods/
+
+# iOS (optional, if ever added back)
+ios/
+ios/build/
+ios/Pods/
+*.xcuserstate
+*.xcodeproj
+*.xcworkspace
