@@ -4,7 +4,7 @@
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/AliciaZhao/Amber-Alert.git
+git clone https://github.com/AliciaZhao/Ember-Alert.git
 cd AmberAlert
 ```
 
@@ -36,7 +36,7 @@ sdk.dir=C:\Users\YourUsername\AppData\Local\Android\Sdk
 
 ---
 
-## ▶️ Running the App
+## Running the App
 
 ### 1. Start Metro bundler
 
