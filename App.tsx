@@ -1,26 +1,30 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import HomeScreen from './screens/HomeScreen';
+import FirePrepScreen from './screens/FirePrepScreen';
+import AlertsScreen from './screens/AlertsScreen';
+import SettingsScreen from './screens/SettingsScreen';
+
+export type RootTabParamList = {
+  'Fire Prep': undefined;
+  Home: undefined;
+  Alerts: undefined;
+  Settings: undefined;
+};
+
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}> Amber Alert Home Page</Text>
-    </View>
+    <NavigationContainer>
+      <Tab.Navigator screenOptions={{ headerShown: false }}>
+        <Tab.Screen name="Fire Prep" component={FirePrepScreen} />
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Alerts" component={AlertsScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 26,
-    color: '#cc0000',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  }
-});
