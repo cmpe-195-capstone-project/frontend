@@ -5,7 +5,7 @@ export default function TopBar() {
   return (
     <View style={styles.container}>
       <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <Text style={styles.title}>Amber <Text style={styles.alert}>Alert</Text></Text>
+      <Text style={styles.title}>Ember <Text style={styles.alert}>Alert</Text></Text>
     </View>
   );
 }

@@ -4,9 +4,9 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 export default function SettingsScreen() {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.option}><Text>👤  Account</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.option}><Text>🎧  Help & Support</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.option}><Text>❓  About</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.option}><Text>Account</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.option}><Text>Help & Support</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.option}><Text>About</Text></TouchableOpacity>
     </View>
   );
 }

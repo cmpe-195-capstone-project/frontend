@@ -22,6 +22,14 @@ android/.cxx/
 *.keystore
 !android/app/debug.keystore
 
+# machine specific
+package-lock.json
+android/.idea/
+android/local.properties
+.DS_Store
+.idea/
+
+
 # iOS (if included)
 ios/build/
 ios/Pods/

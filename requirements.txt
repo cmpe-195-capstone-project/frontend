@@ -7,3 +7,4 @@ requests                     # For polling fire/weather APIs
 pydantic
 python-dotenv
 python-multipart
+psycopg[binary]   # or psycopg2-binary, depending on the repo

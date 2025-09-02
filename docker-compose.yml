@@ -7,11 +7,13 @@ services:
             - POSTGRES_PASSWORD=postgres
         ports:
             - "5433:5432"
+
         networks:
             - ember-alert-network
 
     scheduler:
         image: carlosqmv/ember-alert-scheduler:${SCHEDULER_TAG:-1.0.2}
+        platform: linux/arm64
         container_name: my-scheduler
         restart: always
         environment:
@@ -19,9 +21,15 @@ services:
             - API_URL=https://incidents.fire.ca.gov/umbraco/api/IncidentApi/List?inactive=true
         networks:
             - ember-alert-network
+        env_file:
+            - ./.env.scheduler
         depends_on:
             - db
+        ports:
+            - "7070:8000"
 
 networks:
     ember-alert-network:
         driver: bridge
+volumes:
+  pgdata:
