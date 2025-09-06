@@ -99,7 +99,7 @@ db.sqlite3
 # Android secrets
 android/local.properties
 *.keystore
-
+*.jks
 
 # React Native logs
 *.log
