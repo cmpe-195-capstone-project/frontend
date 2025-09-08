@@ -11,7 +11,7 @@ import {
   TextInput,
   Button,
 } from 'react-native';
-import TopBar from '../components/TopBar';
+import TopBar from '../src/components/TopBar';
 
 export default function AlertsScreen() {
   const [alerts, setAlerts] = useState(

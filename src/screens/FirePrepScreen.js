@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Image } from 'react-native';
-import TopBar from '../components/TopBar'; 
+import TopBar from '../src/components/TopBar'; 
 
 export default function FirePrepScreen() {
   return (
