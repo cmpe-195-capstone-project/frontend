@@ -5,6 +5,7 @@
 
 ```bash
 https://github.com/cmpe-195-capstone-project/frontend.git
+cd frontend
 ```
 
 ---
