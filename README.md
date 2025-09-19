@@ -5,7 +5,6 @@
 
 ```bash
 https://github.com/cmpe-195-capstone-project/frontend.git
-cd AmberAlert
 ```
 
 ---
@@ -31,8 +30,8 @@ Then paste this into it:
 ```properties
 sdk.dir=C:\Users\YourUsername\AppData\Local\Android\Sdk
 ```
-
 > Replace `YourUsername` with your actual Windows username.
+or find it from Andriod Studio -> More Actions -> SDK Manager and get link from there
 
 ---
 
