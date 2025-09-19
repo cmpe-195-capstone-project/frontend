@@ -4,7 +4,7 @@
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/AliciaZhao/Ember-Alert.git
+https://github.com/cmpe-195-capstone-project/frontend.git
 cd AmberAlert
 ```
 
