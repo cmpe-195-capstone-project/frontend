@@ -10,7 +10,7 @@ import {
   TextInput,
   Keyboard,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout, Circle } from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import { LogBox } from 'react-native';
 
@@ -26,6 +26,38 @@ const FALLBACK = {
   latitudeDelta: 0.08,
   longitudeDelta: 0.08,
 };
+
+// --- radius helpers ---
+const ACRE_TO_M2 = 4046.8564224;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/** derive a display radius in meters
+ * - prefer explicit radius_meters if your API sends it
+ * - otherwise derive from acres_burned (area = πr²)
+ *   and clamp to sensible min/max so tiny fires are still visible
+ */
+const getRadiusMeters = (f) => {
+  if (typeof f.radius_meters === "number") return f.radius_meters;
+  const areaM2 = Math.max(1, (f.acres_burned || 1) * ACRE_TO_M2);
+  const r = Math.sqrt(areaM2 / Math.PI);
+  return clamp(r, 120, 2500); // tweak to taste
+};
+
+/** choose the base color */
+const baseColorFor = (f) => (f.is_active && !f.final ? [255, 64, 0] : [30, 150, 30]); // red/orange for active, green otherwise
+
+/** build rgba string from [r,g,b] and alpha */
+const rgba = ([r, g, b], a) => `rgba(${r},${g},${b},${a})`;
+
+/** gradient layers: [radiusMultiplier, alpha] from outer → inner */
+const GRADIENT_LAYERS = [
+  [1.00, 0.18],
+  [0.72, 0.28],
+  [0.48, 0.40],
+  [0.28, 0.55],
+  [0.12, 0.75], // tight bright core
+];
+
 
 export default function HomeScreen() {
   const mapRef = useRef(null);
@@ -211,16 +243,40 @@ export default function HomeScreen() {
             title={simulate ? 'Simulated' : 'Selected'}
           />
 
-          {/* fire spots */}
-          {fireSpots.map((f) => (
-            <Marker
-              key={f.id}
-              coordinate={{ latitude: f.latitude, longitude: f.longitude }}
-              title={f.name}
-              description={`${f.county} • ${Math.round(f.acres_burned)} acres • ${Math.round(f.percent_contained)}% contained`}
-              pinColor={f.is_active && !f.final ? 'red' : 'green'}
-            />
-          ))}
+          {/* fire spots as gradient circles */}
+          {fireSpots.map((f, idx) => {
+            const center = { latitude: Number(f.latitude), longitude: Number(f.longitude) };
+            const R = getRadiusMeters(f);
+            const rgb = baseColorFor(f);
+
+            return (
+              <React.Fragment key={f.id ?? `${center.latitude},${center.longitude},${idx}`}>
+                {GRADIENT_LAYERS.map(([m, a], i) => (
+                  <Circle
+                    key={`${f.id || idx}-layer-${i}`}
+                    center={center}
+                    radius={R * m}
+                    strokeWidth={0}
+                    fillColor={rgba(rgb, a)}
+                    zIndex={1}       // render above base map
+                  />
+                ))}
+
+                {/* Optional: an invisible marker just to enable tap/callout */}
+                <Marker coordinate={center} opacity={0}>
+                  <Callout tooltip>
+                    <View style={{ backgroundColor: '#111', padding: 8, borderRadius: 8 }}>
+                      <Text style={{ color: '#fff', fontWeight: '700' }}>{f.name}</Text>
+                      <Text style={{ color: '#fff' }}>
+                        {f.county} • {Math.round(f.acres_burned || 0)} acres • {Math.round(f.percent_contained || 0)}% contained
+                      </Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              </React.Fragment>
+            );
+          })}
+
         </MapView>
 
         {!!status && (
