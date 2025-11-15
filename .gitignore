@@ -125,3 +125,5 @@ ios/Pods/
 *.xcuserstate
 *.xcodeproj
 *.xcworkspace
+
+reinstall.sh
