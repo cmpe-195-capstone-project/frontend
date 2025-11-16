@@ -24,15 +24,12 @@ public class WebSocketHelper {
     // TODO: Store this in environment var later
     public static final String BASE_WS = "ws://10.0.2.2:8000/ws";
     private String id;
-    private String latitude;
-    private String longitude;
+
     private Context ctx;
 
-    public WebSocketHelper(Context ctx, String id, String latitude, String longitude) {
+    public WebSocketHelper(Context ctx, String id) {
         this.ctx = ctx;
         this.id = id;
-        this.latitude = latitude;
-        this.longitude = longitude;
         this.notificationHelper = new NotificationHelper(ctx);
     }
     public void startSocket() {
@@ -78,21 +75,25 @@ public class WebSocketHelper {
             @Override
             public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
                 // When the connection first connects send users location of the default location
-                Log.d("Websocket", "Here is the longitude: " + longitude + " and latitude: " + latitude  + " - i am sending to server");
-                try {
-                    JSONObject obj = new JSONObject();
-
-                    obj.put("latitude", latitude);
-                    obj.put("longitude", longitude);
-
-                    webSocket.send(obj.toString());
-                    Log.d("Websocket", "I sent data to server" + obj.toString());
-                } catch (Exception e) {
-                    Log.e("Websocket", "JSON error: " + e.getMessage());
-                }
-
                 Log.d("Websocket", "Connection opened");
             }
         });
+    }
+    public void sendLocationUpdate(double latitude, double longitude) {
+        Log.d("Websocket", "Here is the update location - longitude: " + longitude + " and latitude: " + latitude  + ", I am sending to server");
+        if(ws != null) {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("type", "update_location");
+                json.put("latitude", latitude);
+                json.put("longitude", longitude);
+
+
+                ws.send(json.toString());
+                Log.d("Websocket", "I sent data to server: " + json.toString());
+            } catch (Exception e) {
+                Log.e("Websocket", "Failed to send update: " + e.getMessage());
+            }
+        }
     }
 }
