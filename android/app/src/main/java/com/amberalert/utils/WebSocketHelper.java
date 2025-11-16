@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Objects;
@@ -62,7 +63,33 @@ public class WebSocketHelper {
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
                 Log.d("Websocket", "Received text: " + text);
-                notificationHelper.sendNotification("new notifcation", text);
+                try {
+                    // Try to parse the text as JSON
+                    JSONObject json = new JSONObject(text);
+                    String type = json.optString("type");
+
+                    if (type.equals("fire_alert")) {
+                        JSONArray fires = json.getJSONArray("fires");
+
+                        for(int i = 0; i < fires.length(); i++) {
+                            String name = json.getString("name");
+                            String fireType = json.getString("fire_type");
+                            String location = json.getString("location");
+                            String acresBurned = json.getString("acres_burned");
+
+                            String title = String.format("%s - %s", fireType, name);
+                            String message = String.format("%s burned at: %s", acresBurned, location);
+
+                            notificationHelper.sendNotification(title, message);
+                        }
+                    } else if (type.equals("message")) {
+                        String message = json.getString("message");
+                        notificationHelper.sendNotification("Ember Alert", message);
+                    }
+
+                } catch (Exception e) {
+                    Log.d("Websocket", "Error parsing JSON: " + e.getMessage());
+                }
             }
 
             // Called when the server sends a message (binary data)
