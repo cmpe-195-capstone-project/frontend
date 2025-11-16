@@ -27,7 +27,7 @@ public class NotificationHelper {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_LOW);
+                    NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(CHANNEL_DESC);
 
             NotificationManager manager = ctx.getSystemService(NotificationManager.class);
