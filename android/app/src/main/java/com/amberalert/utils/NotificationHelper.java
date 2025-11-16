@@ -40,6 +40,8 @@ public class NotificationHelper {
                 .setContentTitle(title)
                 .setContentText(message)
                 .setSmallIcon(R.drawable.noti_icon)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .build();
 
         NotificationManager manager = null;
