@@ -72,10 +72,12 @@ public class WebSocketHelper {
                         JSONArray fires = json.getJSONArray("fires");
 
                         for(int i = 0; i < fires.length(); i++) {
-                            String name = json.getString("name");
-                            String fireType = json.getString("fire_type");
-                            String location = json.getString("location");
-                            String acresBurned = json.getString("acres_burned");
+                            JSONObject fire = fires.getJSONObject(i);
+
+                            String name = fire.getString("name");
+                            String fireType = fire.getString("fire_type");
+                            String location = fire.getString("location");
+                            String acresBurned = fire.getString("acres_burned");
 
                             String title = String.format("%s - %s", fireType, name);
                             String message = String.format("%s burned at: %s", acresBurned, location);
