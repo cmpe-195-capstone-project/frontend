@@ -18,6 +18,21 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
+
+import com.amberalert.R;
+import com.amberalert.utils.NotificationActionReceiver;
+
+
+
 public class WebSocketHelper {
     private NotificationHelper notificationHelper;
     private WebSocket ws;
@@ -71,7 +86,11 @@ public class WebSocketHelper {
                     if (type.equals("fire_alert")) {
                         JSONArray fires = json.getJSONArray("fires");
 
-                        for(int i = 0; i < fires.length(); i++) {
+                        double safeLat = json.optDouble("safe_latitude", Double.NaN);
+                        double safeLng = json.optDouble("safe_longitude", Double.NaN);
+                        boolean hasSafe = !Double.isNaN(safeLat) && !Double.isNaN(safeLng);
+
+                        for (int i = 0; i < fires.length(); i++) {
                             JSONObject fire = fires.getJSONObject(i);
 
                             String name = fire.getString("name");
@@ -82,11 +101,12 @@ public class WebSocketHelper {
                             String title = String.format("%s - %s", fireType, name);
                             String message = String.format("%s burned at: %s", acresBurned, location);
 
-                            notificationHelper.sendNotification(title, message);
+                            if (hasSafe) {
+                                showEvacNotification(title, message, safeLat, safeLng);
+                            } else {
+                                notificationHelper.sendNotification(title, message);
+                            }
                         }
-                    } else if (type.equals("message")) {
-                        String message = json.getString("message");
-                        notificationHelper.sendNotification("Ember Alert", message);
                     }
 
                 } catch (Exception e) {
@@ -116,13 +136,76 @@ public class WebSocketHelper {
                 json.put("type", "update_location");
                 json.put("latitude", latitude);
                 json.put("longitude", longitude);
-
+                json.put("radius", 5000);
 
                 ws.send(json.toString());
                 Log.d("Websocket", "I sent data to server: " + json.toString());
             } catch (Exception e) {
                 Log.e("Websocket", "Failed to send update: " + e.getMessage());
             }
+        }
+    }
+
+    private void showEvacNotification(String title, String message, double safeLat, double safeLng) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    NotificationHelper.CHANNEL_ID,
+                    NotificationHelper.CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription(NotificationHelper.CHANNEL_DESC);
+
+            NotificationManager manager = ctx.getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+
+        int notificationId = (int) System.currentTimeMillis();
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this.ctx, NotificationHelper.CHANNEL_ID)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                        .setSmallIcon(R.drawable.noti_icon)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setCategory(NotificationCompat.CATEGORY_ALARM)
+                        .setAutoCancel(true);
+
+        // Navigate → Google Maps to safe zone
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + safeLat + "," + safeLng + "&mode=d");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+
+        PendingIntent navigatePendingIntent = PendingIntent.getActivity(
+                ctx,
+                1,
+                mapIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        builder.addAction(R.drawable.noti_icon, "Navigate", navigatePendingIntent);
+
+        // Ignore → cancel this notification
+        Intent ignoreIntent = new Intent(ctx, NotificationActionReceiver.class);
+        ignoreIntent.setAction(NotificationActionReceiver.ACTION_IGNORE_ALERT);
+        ignoreIntent.putExtra(NotificationActionReceiver.EXTRA_NOTIFICATION_ID, notificationId);
+
+        PendingIntent ignorePendingIntent = PendingIntent.getBroadcast(
+                ctx,
+                2,
+                ignoreIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        builder.addAction(R.drawable.noti_icon, "Ignore", ignorePendingIntent);
+
+        Notification notification = builder.build();
+
+        NotificationManager manager =
+                (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (manager != null) {
+            manager.notify(notificationId, notification);
         }
     }
 }
