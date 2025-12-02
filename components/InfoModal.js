@@ -25,11 +25,17 @@ export default function InfoModal({ visible, modalTitle, onClose, children }) {
             <ArrowLeft size={22} color="#222" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{modalTitle}</Text>
-          <View style={{ width: 22 }} /> 
+          <View style={{ width: 22 }} />
         </View>
 
         <View style={styles.body}>
-          {children} 
+          <Image
+            source={require('../assets/logo.png')}
+            style={styles.logo}
+          />
+
+          <Text style={styles.title}>Ember Alert</Text>
+          {children}
         </View>
 
       </SafeAreaView>
@@ -42,14 +48,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff'
   },
-
+logo: {
+    width: 60,
+    height: 70,
+    alignSelf: 'center',
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+    title: {
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: '700',
+    marginBottom: 16,
+    color: '#111',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee'
+    borderBottomColor: '#eee',
+    backgroundColor: '#F8C02D'
   },
 
   headerTitle: {
@@ -61,6 +81,7 @@ const styles = StyleSheet.create({
   },
 
   body: {
+    flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 18,
   },
