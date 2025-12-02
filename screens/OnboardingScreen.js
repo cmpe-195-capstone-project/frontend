@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import uuid from "react-native-uuid";
-import { View, Text, Button, PermissionsAndroid, Platform, NativeModules } from "react-native";
+import { View, Text, Button, PermissionsAndroid, Platform, NativeModules, TouchableOpacity, StyleSheet } from "react-native";
 
 import { storeData, getData } from "../utils/Storage";
+import { ImageBackground } from "react-native";
 
 export default function OnboardingScreen({ onDone }) {
-
   const requestPermissions = async () => {
     // Notifications
     console.log('[Onboarding] Setting notification permissions...');
@@ -35,7 +35,7 @@ export default function OnboardingScreen({ onDone }) {
     console.log('[Onboarding] Location Permission:', loc);
 
     await initForegroundService();
-    onDone(); 
+    onDone();
   };
 
   const initForegroundService = async () => {
@@ -49,9 +49,68 @@ export default function OnboardingScreen({ onDone }) {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 22, marginBottom: 20 }}>Welcome to Ember Alert</Text>
-      <Button title="Enable Permissions" onPress={requestPermissions} />
-    </View>
+    <ImageBackground
+      source={require("../assets/background.png")}
+      resizeMode="cover"
+      style={styles.bg}
+    >
+      <View style={styles.overlay}>
+
+        <Text style={styles.title}>Welcome to Ember Alert</Text>
+
+        <Text style={styles.subtitle}>
+          We need permission to enable wildfire alerts and location-based warnings.
+        </Text>
+
+        <TouchableOpacity style={styles.button} onPress={requestPermissions}>
+          <Text style={{ color: '#222', fontWeight: '600', fontSize: 16 }} >Enable Permissions</Text>
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  bg: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    backgroundColor: 'rgba(0,0,0,0.35)'
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#F3F4F6',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    paddingHorizontal: 10,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: 'white',
+    marginBottom: 28,
+    textAlign: 'center',
+  },
+  button: {
+    width: '75%',
+    paddingVertical: 14,
+    backgroundColor: '#FFC700',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    // subtle shadow
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+  }
+})
