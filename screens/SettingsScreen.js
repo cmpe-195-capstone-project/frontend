@@ -13,10 +13,13 @@ import {
 import TopBar from '../components/TopBar';
 import InfoModal from '../components/InfoModal';
 import AboutContent from '../components/content/AboutContent';
+import AccountContent from '../components/content/AccountContent';
+import HelpContent from '../components/content/HelpContent';
 
 export default function SettingsScreen() {
   const [aboutVisible, setAboutVisible] = useState(false);
-  const [accountVisisble, setAccountVisisble] = useState(false);
+  const [accountVisible, setAccountVisible] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false);
 
 
   const openEmail = () => {
@@ -42,7 +45,7 @@ export default function SettingsScreen() {
 
         <Text style={styles.section}>ACCOUNT</Text>
         <View style={styles.card}>
-          <TouchableOpacity style={styles.option}>
+          <TouchableOpacity style={styles.option} onPress={() => setAccountVisible(true)}>
             <View style={styles.row}>
               <UserCircle size={22} color="#222" />
               <Text style={styles.txt}>Account</Text>
@@ -54,7 +57,7 @@ export default function SettingsScreen() {
 
         <Text style={styles.section}>SUPPORT</Text>
         <View style={styles.card}>
-          <TouchableOpacity style={styles.option} onPress={openFAQ}>
+          <TouchableOpacity style={styles.option} onPress={() => setHelpVisible()}>
             <View style={styles.row}>
               <BadgeHelp size={22} color="#222" />
               <Text style={styles.txt}>FAQ / Help</Text>
@@ -107,6 +110,20 @@ export default function SettingsScreen() {
           modalTitle={"About"}
           onClose={() => setAboutVisible(false)}
           children={<AboutContent />}
+        />
+
+        <InfoModal
+          visible={accountVisible}
+          modalTitle={"Account"}
+          onClose={() => setAccountVisible(false)}
+          children={<AccountContent />}
+        />
+
+        <InfoModal
+          visible={helpVisible}
+          modalTitle={"FAQ & Help"}
+          onClose={() => setHelpVisible(false)}
+          children={<HelpContent />}
         />
 
       </View>
