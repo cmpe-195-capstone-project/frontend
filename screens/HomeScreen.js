@@ -14,11 +14,14 @@ export default function HomeScreen() {
     (async () => {
       console.log('[Home] starting permission flow');
       if (Platform.OS === 'android') {
-        const res = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-        console.log('[Home] permission result:', res);
-        if (res !== PermissionsAndroid.RESULTS.GRANTED) {
-          setStatus('Location permission denied. Showing default area.');
-          return;
+        const alreadyGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+        if (!alreadyGranted) {
+          const res = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+          console.log('[Home] permission result:', res);
+          if (res !== PermissionsAndroid.RESULTS.GRANTED) {
+            setStatus('Location permission denied. Showing default area.');
+            return;
+          }
         }
       }
       getOneFix();
@@ -35,13 +38,14 @@ export default function HomeScreen() {
         const next = { latitude, longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 };
         setRegion(next);
         setStatus('');
-        mapRef.current?.animateToRegion(next, 600);
-      },
+        setTimeout(() => {
+          mapRef.current?.animateToRegion(next, 600);
+        }, 300);      },
       (err) => {
         console.log('[Home] GPS ERROR:', err.code, err.message);
         setStatus(`GPS error (${err.code}). Showing default area.`);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   };
 
