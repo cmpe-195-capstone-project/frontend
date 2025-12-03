@@ -73,7 +73,6 @@ export default function HomeScreen() {
         console.log('[Home] permission result:', res);
         if (res !== PermissionsAndroid.RESULTS.GRANTED) {
           setStatus('Location permission denied. Showing default area.');
-          // still load fires for the default area
           fetchFires('Santa Clara');
           return;
         }
@@ -141,7 +140,6 @@ export default function HomeScreen() {
       (err) => {
         console.log('[Home] GPS ERROR:', err.code, err.message);
         setStatus(`GPS error (${err.code}). Showing default area.`);
-        // still load fires for the default area
         fetchFires('Santa Clara');
       },
       {
@@ -201,7 +199,6 @@ export default function HomeScreen() {
         region={region}
         showsUserLocation
         showsMyLocationButton={false}
-        // 👇 no more bbox fetching here – just track region
         onRegionChangeComplete={(r) => {
           setRegion(r);
         }}
