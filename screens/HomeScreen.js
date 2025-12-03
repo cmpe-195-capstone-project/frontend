@@ -73,6 +73,8 @@ export default function HomeScreen() {
         console.log('[Home] permission result:', res);
         if (res !== PermissionsAndroid.RESULTS.GRANTED) {
           setStatus('Location permission denied. Showing default area.');
+          // still load fires for the default area
+          fetchFires('Santa Clara');
           return;
         }
       }
@@ -91,7 +93,9 @@ export default function HomeScreen() {
     try {
       setLoadingFires(true);
       const url = `${API_BASE}/server/fires?county=${encodeURIComponent(county)}`;
-      console.log('[frontend] GET', url);
+      if (__DEV__) {
+        console.log('[frontend] GET', url);
+      }
       const res = await fetch(url);
       const text = await res.text();
       let data = [];
@@ -100,72 +104,20 @@ export default function HomeScreen() {
       } catch {
         console.warn('[frontend] non-JSON response:', text.slice(0, 200));
       }
-      console.log(
-        '[frontend] status=',
-        res.status,
-        'rows=',
-        Array.isArray(data) ? data.length : 0
-      );
+      if (__DEV__) {
+        console.log(
+          '[frontend] status=',
+          res.status,
+          'rows=',
+          Array.isArray(data) ? data.length : 0
+        );
+      }
       setFireSpots(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('[frontend] fetchFires network error:', err?.message || err);
       setFireSpots([]);
     } finally {
       setLoadingFires(false);
-    }
-  };
-
-  let bboxTimer;
-  const onRegionChangeComplete = (r) => {
-    setRegion(r);
-    if (bboxTimer) clearTimeout(bboxTimer);
-    bboxTimer = setTimeout(() => {
-      fetchFiresInBox(r, 'Santa Clara').catch((err) =>
-        console.error('[frontend] bbox fetch unhandled:', err?.message || err)
-      );
-    }, 400);
-  };
-
-  useEffect(
-    () => () => {
-      if (bboxTimer) clearTimeout(bboxTimer);
-    },
-    []
-  );
-
-  const regionToBBox = (r) => ({
-    minLat: r.latitude - r.latitudeDelta / 2,
-    maxLat: r.latitude + r.latitudeDelta / 2,
-    minLng: r.longitude - r.longitudeDelta / 2,
-    maxLng: r.longitude + r.longitudeDelta / 2,
-  });
-
-  const fetchFiresInBox = async (r, county = 'Santa Clara') => {
-    const { minLat, minLng, maxLat, maxLng } = regionToBBox(r);
-    console.log(
-      `[frontend] Fetching bbox fires: box=(${minLat},${minLng})→(${maxLat},${maxLng}) county=${county}`
-    );
-    try {
-      const qs = new URLSearchParams({
-        minLat,
-        minLng,
-        maxLat,
-        maxLng,
-        county,
-      }).toString();
-      const url = `${API_BASE}/server/fires/box?${qs}`;
-      console.log('[frontend] GET', url);
-      const res = await fetch(url);
-      const data = await res.json();
-      console.log(
-        '[frontend] status=',
-        res.status,
-        'rows=',
-        Array.isArray(data) ? data.length : 0
-      );
-      setFireSpots(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('[frontend] fetchFiresInBox error:', err?.message || err);
     }
   };
 
@@ -189,6 +141,7 @@ export default function HomeScreen() {
       (err) => {
         console.log('[Home] GPS ERROR:', err.code, err.message);
         setStatus(`GPS error (${err.code}). Showing default area.`);
+        // still load fires for the default area
         fetchFires('Santa Clara');
       },
       {
@@ -248,9 +201,9 @@ export default function HomeScreen() {
         region={region}
         showsUserLocation
         showsMyLocationButton={false}
+        // 👇 no more bbox fetching here – just track region
         onRegionChangeComplete={(r) => {
           setRegion(r);
-          fetchFiresInBox(r, 'Santa Clara');
         }}
         onLongPress={handleLongPress}
       >
