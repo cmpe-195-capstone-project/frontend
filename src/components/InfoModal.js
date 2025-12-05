@@ -1,0 +1,102 @@
+import React, { Children } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  SafeAreaView,
+  Image
+} from 'react-native';
+import { ArrowLeft } from 'lucide-react-native';
+
+export default function InfoModal({ visible, modalTitle, onClose, headerText, showLogo = true, children }) {
+  return (
+    <Modal
+      animationType="slide"
+      visible={visible}
+      onRequestClose={onClose}
+      presentationStyle="fullScreen"
+    >
+      <SafeAreaView style={styles.container}>
+
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose} style={{ padding: 4 }}>
+            <ArrowLeft size={22} color="#222" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{modalTitle}</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <View style={styles.body}>
+          {showLogo && (
+            <View>
+              <Image
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+              />
+              <Text style={styles.title}>Ember Alert</Text>
+            </View>
+          )}
+          {headerText && (
+            <Text style={styles.h1}>{headerText}</Text>
+          )}
+          {children}
+        </View>
+
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+  h1: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#222',
+  },
+  logo: {
+    width: 60,
+    height: 70,
+    alignSelf: 'center',
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: '700',
+    marginBottom: 16,
+    color: '#111',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#F8C02D'
+  },
+
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#222',
+  },
+
+  body: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+  },
+
+});
