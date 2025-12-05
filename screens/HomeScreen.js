@@ -14,9 +14,9 @@ import MapView, { Marker, PROVIDER_GOOGLE, Callout, Circle } from 'react-native-
 import Geolocation from 'react-native-geolocation-service';
 import { LogBox } from 'react-native';
 
-if (__DEV__) {
-  LogBox.ignoreAllLogs(true);
-}
+  if (__DEV__) {
+    LogBox.ignoreAllLogs(true);
+  }
 
 const API_BASE = __DEV__ ? 'http://10.0.2.2:8000' : 'https://YOUR_API_DOMAIN';
 
@@ -31,25 +31,33 @@ const FALLBACK = {
 const ACRE_TO_M2 = 4046.8564224;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+/** derive a display radius in meters
+ * - prefer explicit radius_meters if your API sends it
+ * - otherwise derive from acres_burned (area = πr²)
+ *   and clamp to sensible min/max so tiny fires are still visible
+ */
 const getRadiusMeters = (f) => {
-  if (typeof f.radius_meters === 'number') return f.radius_meters;
+  if (typeof f.radius_meters === "number") return f.radius_meters;
   const areaM2 = Math.max(1, (f.acres_burned || 1) * ACRE_TO_M2);
   const r = Math.sqrt(areaM2 / Math.PI);
-  return clamp(r, 120, 2500);
+  return clamp(r, 120, 2500); // tweak to taste
 };
 
-const baseColorFor = (f) =>
-  f.is_active && !f.final ? [255, 64, 0] : [30, 150, 30];
+/** choose the base color */
+const baseColorFor = (f) => (f.is_active && !f.final ? [255, 64, 0] : [30, 150, 30]); // red/orange for active, green otherwise
 
+/** build rgba string from [r,g,b] and alpha */
 const rgba = ([r, g, b], a) => `rgba(${r},${g},${b},${a})`;
 
+/** gradient layers: [radiusMultiplier, alpha] from outer → inner */
 const GRADIENT_LAYERS = [
-  [1.0, 0.18],
+  [1.00, 0.18],
   [0.72, 0.28],
-  [0.48, 0.4],
+  [0.48, 0.40],
   [0.28, 0.55],
-  [0.12, 0.75],
+  [0.12, 0.75], // tight bright core
 ];
+
 
 export default function HomeScreen() {
   const mapRef = useRef(null);
@@ -58,7 +66,7 @@ export default function HomeScreen() {
   const [region, setRegion] = useState(FALLBACK);
   const [status, setStatus] = useState('Booting…');
 
-  // simulate panel state
+  // manually set long and lats
   const [simulate, setSimulate] = useState(false);
   const [latInput, setLatInput] = useState(String(FALLBACK.latitude));
   const [lngInput, setLngInput] = useState(String(FALLBACK.longitude));
@@ -83,7 +91,7 @@ export default function HomeScreen() {
 
   const animateTo = (next) => {
     setRegion(next);
-    if (mapRef.current?.animateToRegion) {
+    if (mapRef.current && mapRef.current.animateToRegion) {
       mapRef.current.animateToRegion(next, 600);
     }
   };
@@ -136,6 +144,7 @@ export default function HomeScreen() {
         setStatus('');
         animateTo(next);
         fetchFires('Santa Clara');
+        //fetchFiresInBox(next, 'Santa Clara');
       },
       (err) => {
         console.log('[Home] GPS ERROR:', err.code, err.message);
@@ -152,6 +161,7 @@ export default function HomeScreen() {
     );
   };
 
+  // set location from inputs
   const setFromInputs = () => {
     const lat = parseFloat(latInput);
     const lng = parseFloat(lngInput);

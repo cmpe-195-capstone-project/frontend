@@ -74,6 +74,4 @@ npx react-native run-android
 - React Native 0.73
 - Metro bundler
 - Android SDK
-- FastAPI or Firebase for backend alerts
-
 ---
