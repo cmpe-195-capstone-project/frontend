@@ -5,7 +5,7 @@ import {
   Dimensions,
   Platform,
   PermissionsAndroid,
-  Platform, PermissionsAndroid, Text,
+ Text,
   TouchableOpacity,
   TextInput,
   Keyboard,
