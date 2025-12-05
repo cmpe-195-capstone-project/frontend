@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Image, ScrollView, Modal, FlatList, Alert } from 'react-native';
-import TopBar from '../components/TopBar'; 
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  Linking,
+  FlatList,
+  StyleSheet,
+  SafeAreaView,
+  ImageBackground,
+  TouchableOpacity,
+} from 'react-native';
+
+import TopBar from '../components/TopBar';
+import InfoModal from '../components/InfoModal';
+
 
 export default function FirePrepScreen() {
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [showModal, setShowModal] = useState(false);    
+  const [showModal, setShowModal] = useState(false);
+
   const firePrepCategories = [
     {
       id: 'when-wildfire-begins',
       title: 'When Wildfire Begins',
-      icon: require('../assets/checklist.png'),
+      header: 'Actions When Fire Threatens',
+      illustration: require('../assets/illustrations/firefighter.png'),
+      icon: require('../assets/icons/wildfire.png'),
       description: 'Actions to take when a wildfire starts',
       sections: [
         {
@@ -63,7 +79,9 @@ export default function FirePrepScreen() {
     {
       id: 'wildfire-preparation',
       title: 'Wildfire Preparation',
-      icon: require('../assets/checklist.png'),
+      header: 'Preparation & Planning Guide',
+      illustration: require('../assets/illustrations/fire-prevention.png'),
+      icon: require('../assets/icons/preparation.png'),
       description: 'Plan ahead and prepare for wildfire season',
       sections: [
         {
@@ -106,8 +124,10 @@ export default function FirePrepScreen() {
     },
     {
       id: 'ready-bag',
-      title: 'Fire Ready Bag',
-      icon: require('../assets/bag.png'),
+      title: 'Emergency Go-Bag',
+      header: 'What to Pack in Your Go-Bag',
+      illustration: require('../assets/illustrations/first-aid-kit.png'),
+      icon: require('../assets/icons/bag.png'),
       description: 'Essential items for evacuation',
       items: [
         'Important documents (ID, insurance, deeds)',
@@ -126,8 +146,10 @@ export default function FirePrepScreen() {
     },
     {
       id: 'santa-clara-resources',
-      title: 'Santa Clara Emergency Resources',
-      icon: require('../assets/checklist.png'),
+      title: 'Emergency Resources',
+      header: 'Local Emergency Services & Support',
+      illustration: require('../assets/illustrations/ambulance.png'),
+      icon: require('../assets/icons/emergency-relief.png'),
       description: 'Local food banks, shelters & emergency services',
       items: [
         'Santa Clara County Emergency Operations Center: (408) 299-2500',
@@ -144,10 +166,39 @@ export default function FirePrepScreen() {
         'Local evacuation centers (check county website)'
       ]
     }
-  ];   
-  const handleCategoryPress = (category) => {  // ADD THIS FUNCTION
+  ];
+
+  const handleCategoryPress = (category) => {  
     setSelectedCategory(category);
     setShowModal(true);
+  };
+
+  const renderResourceItem = ({ item, index }) => {
+    const parts = item.split(':');
+    const text = parts[0]?.trim();
+    const phone = parts[1]?.trim();
+
+    return (
+      <View style={styles.resourceRow}>
+        <Text style={styles.resourceIndex}>{index + 1}.</Text>
+
+        {!phone ? (
+          <Text style={styles.resourceLabel}>{item}</Text>
+        ) : (
+          <View style={{ flex: 1 }}>
+
+            <Text style={styles.resourceLabel}>{text}</Text>
+            <Text
+              style={{ fontSize: 14, color: '#007AFF', fontWeight: '500' }}
+              onPress={() => Linking.openURL(`tel:${phone}`)}
+            >
+              {phone}
+            </Text>
+
+          </View>
+        )}
+      </View>
+    );
   };
 
   const renderChecklistItem = ({ item, index }) => (
@@ -168,76 +219,113 @@ export default function FirePrepScreen() {
       ))}
     </View>
   );
+  
+
   return (
     <SafeAreaView style={styles.screen}>
       <TopBar />
-      <View style={styles.container}>
-        <Text style={styles.title}>Prepare for Wildfires</Text>
-        <Text style={styles.subtitle}>Stay ready. Stay safe.</Text>
-
-        <View style={styles.grid}>
-          {firePrepCategories.map((category) => (
-            <TouchableOpacity 
-              key={category.id}
-              style={styles.card} 
-              onPress={() => handleCategoryPress(category)}
-            >
-              <Image source={category.icon} style={styles.boximg} />
-              <Text style={styles.cardText}>{category.title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-            {/* Modal for checklist */}
-            <Modal
-        visible={showModal}
-        animationType="slide"
-        onRequestClose={() => setShowModal(false)}
+      <ImageBackground
+        source={require("../assets/background.png")}
+        resizeMode="cover"
+        style={styles.bg}
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{selectedCategory?.title}</Text>
-            <TouchableOpacity onPress={() => setShowModal(false)}>
-              <Text style={styles.closeButton}>✕</Text>
-            </TouchableOpacity>
+        <View style={styles.overlay}>
+          <Text style={styles.title}>Prepare for Wildfires</Text>
+          <Text style={styles.subtitle}>Stay ready. Stay safe.</Text>
+          <View style={styles.grid}>
+            {firePrepCategories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={styles.card}
+                onPress={() => handleCategoryPress(category)}
+              >
+                <Image source={category.icon} style={styles.boximg} />
+                <Text style={styles.cardText}>{category.title}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          
-          {selectedCategory?.sections ? (
-            <FlatList
-              data={selectedCategory.sections}
-              renderItem={renderSectionItem}
-              keyExtractor={(item, index) => index.toString()}
-              style={styles.checklist}
-              contentContainerStyle={styles.checklistContent}
-            />
-          ) : (
-            <FlatList
-              data={selectedCategory?.items || []}
-              renderItem={renderChecklistItem}
-              keyExtractor={(item, index) => index.toString()}
-              style={styles.checklist}
-            />
-          )}
-        </SafeAreaView>
-      </Modal>
+        </View>
+      </ImageBackground>
+
+      {/* Modal for checklist */}
+      <InfoModal
+        visible={showModal}
+        modalTitle={selectedCategory?.title}
+        onClose={() => setShowModal(false)}
+        headerText={selectedCategory?.header}
+        showLogo={false}
+        children={
+          <SafeAreaView style={styles.modalContainer}>
+            {selectedCategory?.id === 'santa-clara-resources' ? (
+              <FlatList
+                data={selectedCategory.items || []}
+                renderItem={renderResourceItem}
+                keyExtractor={(item, index) => index.toString()}
+                ListHeaderComponent={
+                  <Image
+                    source={selectedCategory?.illustration}
+                    style={styles.illustration}
+                  />
+                }
+                style={styles.checklist}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : selectedCategory?.sections ? (
+              <View>
+                <FlatList
+                  data={selectedCategory.sections}
+                  renderItem={renderSectionItem}
+                  keyExtractor={(item, index) => index.toString()}
+                  ListHeaderComponent={
+                    <Image
+                      source={selectedCategory?.illustration}
+                      style={styles.illustration}
+                    />
+                  }
+                  style={styles.checklist}
+                  contentContainerStyle={styles.checklistContent}
+                  showsVerticalScrollIndicator={false}
+                />
+              </View>
+            ) : (
+              <View>
+
+                <FlatList
+                  data={selectedCategory?.items || []}
+                  renderItem={renderChecklistItem}
+                  keyExtractor={(item, index) => index.toString()}
+                  ListHeaderComponent={
+                    <Image
+                      source={selectedCategory?.illustration}
+                      style={styles.illustration}
+                    />
+                  }
+                  style={styles.checklist}
+                  showsVerticalScrollIndicator={false}
+                />
+              </View>
+            )}
+          </SafeAreaView>
+        }
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#fff' },
+  screen: { flex: 1 },
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, color: 'black', fontWeight: 'bold', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: 'black', textAlign: 'center', marginBottom: 20 },
+  title: { fontSize: 22, color: 'white', fontWeight: 'bold', textAlign: 'center', marginTop: 30 },
+  subtitle: { fontSize: 16, color: '#F3F4F6', textAlign: 'center', marginBottom: 20 },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
   },
   card: {
-    backgroundColor: '#FFD54F',
+    backgroundColor: 'rgba(245, 232, 200, 0.90)',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     width: '40%',
     marginVertical: 10,
     alignItems: 'center',
@@ -261,7 +349,7 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 20 },
   modalTitle: { fontSize: 20, fontWeight: 'bold' },
   closeButton: { fontSize: 24, color: '#666' },
-  checklist: { padding: 20 },
+  checklist: { paddingHorizontal: 20 },
   checklistContent: { paddingBottom: 20 },
   sectionContainer: {
     marginBottom: 24,
@@ -269,11 +357,52 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#222',
     marginBottom: 12,
     marginTop: 8,
   },
   checklistItem: { flexDirection: 'row', paddingVertical: 8 },
   checklistNumber: { fontWeight: 'bold', marginRight: 10 },
-  checklistText: { flex: 1 }
+  checklistText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#555',
+  },
+  bg: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0,0,0,0.35)'
+  },
+  illustration: {
+    width: 200,
+    height: 200,
+    alignSelf: 'center',
+    resizeMode: 'contain',
+    marginBottom: 15,
+  },
+  resourceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingTop: 2,
+    marginBottom: 20,
+  },
+  resourceIndex: {
+    width: 28,
+    fontWeight: 'bold',
+    fontSize: 17,
+    color: '#444',
+  },
+  resourceLabel: {
+    fontSize: 16,
+    color: '#222',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+
 });
