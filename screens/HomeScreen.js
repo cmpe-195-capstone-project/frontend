@@ -100,6 +100,7 @@ export default function HomeScreen() {
     try {
       setLoadingFires(true);
       const url = `${API_BASE}/server/fires?county=${encodeURIComponent(county)}`;
+      console.log(url)
       if (__DEV__) {
         console.log('[frontend] GET', url);
       }
