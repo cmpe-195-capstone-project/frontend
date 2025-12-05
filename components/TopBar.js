@@ -12,7 +12,7 @@ export default function TopBar() {
 
 const styles = StyleSheet.create({
   container: {
-    height: 94,
+    height: 85,
     backgroundColor: '#F8C02D',
     flexDirection: 'row',
     alignItems: 'center',
@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
     shadowColor: 'black',
     shadowOpacity: 0.15,
     shadowRadius: 6,
-    elevation: 2,
+    borderBottomWidth: 2,
+    borderBlockColor: '#e0a600',
 
   },
   logo: {
