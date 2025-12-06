@@ -10,7 +10,10 @@
     "test": "jest",
     "sync-location": "node sync-location.js",
     "sync-location:watch": "node sync-location.js --watch",
-    "sync-location:test": "MY_LAT=41.8781 MY_LON=-87.6298 node sync-location.js"
+    "sync-location:test": "MY_LAT=41.8781 MY_LON=-87.6298 node sync-location.js",
+    "stress-test:fires": "node create-test-fires.js",
+    "stress-test:progressive": "node run-stress-tests.js",
+    "clear-fires": "node clear-fires.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",

@@ -65,11 +65,36 @@ export default function HomeScreen() {
   const [loadingFires, setLoadingFires] = useState(false);
   const [region, setRegion] = useState(FALLBACK);
   const [status, setStatus] = useState('Booting…');
+  const fetchStartTimeRef = useRef(null);
+  const renderStartTimeRef = useRef(null);
 
   // manually set long and lats
   const [simulate, setSimulate] = useState(false);
   const [latInput, setLatInput] = useState(String(FALLBACK.latitude));
   const [lngInput, setLngInput] = useState(String(FALLBACK.longitude));
+
+  // Track when fires finish rendering on map
+  useEffect(() => {
+    if (fireSpots.length > 0 && renderStartTimeRef.current) {
+      // Use setTimeout to allow React to finish rendering
+      setTimeout(() => {
+        const renderEndTime = Date.now();
+        const renderDuration = renderEndTime - renderStartTimeRef.current;
+        const totalDuration = fetchStartTimeRef.current 
+          ? renderEndTime - fetchStartTimeRef.current 
+          : renderDuration;
+        
+        console.log('[STRESS TEST] ✅ Fire Rendering Complete:');
+        console.log(`   Total Fires Rendered: ${fireSpots.length}`);
+        console.log(`   Render Time: ${renderDuration}ms`);
+        console.log(`   Total Time (fetch + render): ${totalDuration}ms`);
+        console.log(`   Fires/Second: ${(fireSpots.length / (totalDuration / 1000)).toFixed(2)}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        renderStartTimeRef.current = null;
+      }, 100);
+    }
+  }, [fireSpots]);
 
   useEffect(() => {
     (async () => {
@@ -99,29 +124,57 @@ export default function HomeScreen() {
   const fetchFires = async (county = 'Santa Clara') => {
     try {
       setLoadingFires(true);
+      fetchStartTimeRef.current = Date.now();
+      renderStartTimeRef.current = null;
       const url = `${API_BASE}/server/fires?county=${encodeURIComponent(county)}`;
-      console.log(url)
+      console.log('[STRESS TEST] 🔥 Starting fire fetch...');
+      console.log('[STRESS TEST] Request URL:', url);
       if (__DEV__) {
         console.log('[frontend] GET', url);
       }
+      
+      const apiStartTime = Date.now();
       const res = await fetch(url);
+      const apiEndTime = Date.now();
+      const apiDuration = apiEndTime - apiStartTime;
+      
       const text = await res.text();
       let data = [];
+      let parseError = null;
       try {
         data = JSON.parse(text);
-      } catch {
+      } catch (e) {
+        parseError = e;
         console.warn('[frontend] non-JSON response:', text.slice(0, 200));
       }
+      
+      const validFires = Array.isArray(data) ? data : [];
+      const totalFires = validFires.length;
+      const failedFires = parseError ? 1 : 0;
+      
       if (__DEV__) {
         console.log(
           '[frontend] status=',
           res.status,
           'rows=',
-          Array.isArray(data) ? data.length : 0
+          totalFires
         );
       }
-      setFireSpots(Array.isArray(data) ? data : []);
+      
+      console.log('[STRESS TEST] 📊 API Response Metrics:');
+      console.log(`   Status: ${res.status}`);
+      console.log(`   API Request Time: ${apiDuration}ms`);
+      console.log(`   Total Fires Received: ${totalFires}`);
+      console.log(`   Parse Errors: ${failedFires}`);
+      
+      renderStartTimeRef.current = Date.now();
+      setFireSpots(validFires);
     } catch (err) {
+      const errorTime = Date.now();
+      const totalDuration = fetchStartTimeRef.current ? errorTime - fetchStartTimeRef.current : 0;
+      console.error('[STRESS TEST] ❌ Fire fetch failed:');
+      console.error(`   Error: ${err?.message || err}`);
+      console.error(`   Duration: ${totalDuration}ms`);
       console.error('[frontend] fetchFires network error:', err?.message || err);
       setFireSpots([]);
     } finally {
