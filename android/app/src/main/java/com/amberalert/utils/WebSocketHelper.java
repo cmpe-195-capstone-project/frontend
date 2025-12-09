@@ -37,8 +37,10 @@ public class WebSocketHelper {
     private NotificationHelper notificationHelper;
     private WebSocket ws;
     private OkHttpClient client;
-    // TODO: Store this in environment var later
-    public static final String BASE_WS = "ws://10.0.2.2:8000/ws";
+
+    public static final String BASE_WS = "ws://18.222.188.44/ws";
+    // public static final String BASE_WS = "ws://10.0.2.2:8000/ws";
+
     private String id;
 
     private Context ctx;

@@ -55,8 +55,8 @@ public class ForegroundService extends Service {
         if (id == null) id = "N/A";
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Ember Alert Active")
-                .setContentText("Monitoring alerts in real-time…")
+                .setContentTitle("Ember Alert Notifications Active")
+                .setContentText("Monitoring alerts...")
                 .setSmallIcon(R.drawable.noti_icon)
                 .setOngoing(false)
                 .setSilent(true)

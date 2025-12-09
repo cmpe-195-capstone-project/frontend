@@ -5,20 +5,22 @@ import {
   Dimensions,
   Platform,
   PermissionsAndroid,
- Text,
+  Text,
   TouchableOpacity,
   TextInput,
   Keyboard,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Callout, Circle } from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
+import { useFocusEffect } from '@react-navigation/native';
 import { LogBox } from 'react-native';
 
-  if (__DEV__) {
-    LogBox.ignoreAllLogs(true);
-  }
+if (__DEV__) {
+  LogBox.ignoreAllLogs(true);
+}
 
-const API_BASE = __DEV__ ? 'http://10.0.2.2:8000' : 'https://YOUR_API_DOMAIN';
+const API_BASE = __DEV__ ? 'http://18.222.188.44' : 'http://YOUR_API_DOMAIN';
+// const API_BASE = __DEV__ ? 'http://10.0.2.2:8000' : 'https://YOUR_API_DOMAIN';
 
 const FALLBACK = {
   latitude: 37.7749,
@@ -78,19 +80,19 @@ export default function HomeScreen() {
     if (fireSpots.length > 0 && renderStartTimeRef.current) {
       // Use setTimeout to allow React to finish rendering
       setTimeout(() => {
-        const renderEndTime = Date.now();
+        const renderEndTime = Date.now()
         const renderDuration = renderEndTime - renderStartTimeRef.current;
-        const totalDuration = fetchStartTimeRef.current 
-          ? renderEndTime - fetchStartTimeRef.current 
+        const totalDuration = fetchStartTimeRef.current
+          ? renderEndTime - fetchStartTimeRef.current
           : renderDuration;
-        
+
         console.log('[STRESS TEST] ✅ Fire Rendering Complete:');
         console.log(`   Total Fires Rendered: ${fireSpots.length}`);
         console.log(`   Render Time: ${renderDuration}ms`);
         console.log(`   Total Time (fetch + render): ${totalDuration}ms`);
         console.log(`   Fires/Second: ${(fireSpots.length / (totalDuration / 1000)).toFixed(2)}`);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        
+
         renderStartTimeRef.current = null;
       }, 100);
     }
@@ -98,21 +100,35 @@ export default function HomeScreen() {
 
   useEffect(() => {
     (async () => {
-      console.log('[Home] starting permission flow');
-      if (Platform.OS === 'android') {
-        const res = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        console.log('[Home] permission result:', res);
-        if (res !== PermissionsAndroid.RESULTS.GRANTED) {
-          setStatus('Location permission denied. Showing default area.');
-          fetchFires('Santa Clara');
-          return;
-        }
-      }
+      // Permissions handled on onboarding screen
+
+      // console.log('[Home] starting permission flow');
+      // if (Platform.OS === 'android') {
+      //   const res = await PermissionsAndroid.request(
+      //     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      //   );
+      //   console.log('[Home] permission result:', res);
+      //   if (res !== PermissionsAndroid.RESULTS.GRANTED) {
+      //     setStatus('Location permission denied. Showing default area.');
+      //     fetchFires('Santa Clara');
+      //     return;
+      //   }
+      // }
       getOneFix();
     })();
   }, []);
+
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("[HomeScreen] Screen focused. Fetching fires...");
+      fetchFires("Santa Clara");
+
+      return () => {
+        console.log("[HomeScreen] Screen unfocused");
+      };
+    }, [])
+  );
 
   const animateTo = (next) => {
     setRegion(next);
@@ -132,12 +148,12 @@ export default function HomeScreen() {
       if (__DEV__) {
         console.log('[frontend] GET', url);
       }
-      
+
       const apiStartTime = Date.now();
       const res = await fetch(url);
       const apiEndTime = Date.now();
       const apiDuration = apiEndTime - apiStartTime;
-      
+
       const text = await res.text();
       let data = [];
       let parseError = null;
@@ -147,11 +163,11 @@ export default function HomeScreen() {
         parseError = e;
         console.warn('[frontend] non-JSON response:', text.slice(0, 200));
       }
-      
+
       const validFires = Array.isArray(data) ? data : [];
       const totalFires = validFires.length;
       const failedFires = parseError ? 1 : 0;
-      
+
       if (__DEV__) {
         console.log(
           '[frontend] status=',
@@ -160,13 +176,13 @@ export default function HomeScreen() {
           totalFires
         );
       }
-      
+
       console.log('[STRESS TEST] 📊 API Response Metrics:');
       console.log(`   Status: ${res.status}`);
       console.log(`   API Request Time: ${apiDuration}ms`);
       console.log(`   Total Fires Received: ${totalFires}`);
       console.log(`   Parse Errors: ${failedFires}`);
-      
+
       renderStartTimeRef.current = Date.now();
       setFireSpots(validFires);
     } catch (err) {
@@ -324,7 +340,8 @@ export default function HomeScreen() {
         <Text style={styles.btnText}>My Location</Text>
       </TouchableOpacity>
 
-      <View style={styles.simPanel}>
+      {/* simulation panel */}
+      {/* <View style={styles.simPanel}>
         <TouchableOpacity
           onPress={() => setSimulate((v) => !v)}
           style={[styles.toggle, simulate ? styles.toggleOn : styles.toggleOff]}
@@ -363,7 +380,7 @@ export default function HomeScreen() {
             ? 'Long-press the map to pick a point, or enter coordinates and press Set.'
             : 'Turn ON Simulate to type coords or long-press the map.'}
         </Text>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -389,13 +406,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 24,
-    backgroundColor: '#1e88e5',
+    backgroundColor: '#FEBA01',
+    borderWidth: 1,
+    borderBlockColor: 'black',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
     zIndex: 2,
   },
-  btnText: { color: '#fff', fontWeight: 'bold' },
+  btnText: { color: 'black', fontWeight: 'bold' },
 
   simPanel: {
     position: 'absolute',
